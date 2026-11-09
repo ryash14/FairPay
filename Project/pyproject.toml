@@ -1,0 +1,18 @@
+[project]
+name = "fairpay-ai"
+version = "1.0.0"
+description = "Payroll query assessment and back-pay remediation for Kestrel Hospitality Group"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+extend-exclude = ["config/config.py", "devkit/reference_config.py", "tests.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "E731", "B007", "B008", "B905", "UP007", "UP045", "I001"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests_fairpay"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning", "ignore::UserWarning"]

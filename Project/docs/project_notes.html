@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FairPay AI · Project notes</title>
+<style>
+:root{
+  --bg:#191919; --side:#202020; --hover:#2a2a2a; --line:#2f2f2f;
+  --text:#e6e6e6; --muted:#9b9b9b; --faint:#6f6f6f; --code:#262626;
+  --sideW:250px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit}
+/* sidebar */
+#side{position:fixed;top:0;left:0;bottom:0;width:var(--sideW);background:var(--side);
+  border-right:1px solid var(--line);padding:18px 10px 30px;overflow-y:auto;transition:transform .2s ease;z-index:20}
+body.hide #side{transform:translateX(-100%)}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 16px}
+.brand b{font-size:14px;font-weight:600}
+.brand span{font-size:12px;color:var(--faint)}
+#side .grp{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:16px 10px 6px}
+#side a{display:block;padding:4px 10px;border-radius:5px;font-size:14px;color:var(--muted);text-decoration:none}
+#side a:hover{background:var(--hover);color:var(--text)}
+#side a.on{background:var(--hover);color:var(--text)}
+#toggle{position:fixed;top:14px;left:calc(var(--sideW) + 12px);z-index:30;background:transparent;border:1px solid var(--line);
+  color:var(--muted);border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:15px;transition:left .2s ease}
+#toggle:hover{background:var(--hover);color:var(--text)}
+body.hide #toggle{left:12px}
+/* page */
+main{margin-left:var(--sideW);transition:margin .2s ease;padding:70px 24px 120px}
+body.hide main{margin-left:0}
+.page{max-width:820px;margin:0 auto}
+.wide{max-width:1100px;margin:0 auto}
+h1{font-size:40px;line-height:1.2;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 28px}
+.props{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:34px;font-size:14px}
+.props div{display:flex;padding:3px 0}
+.props dt{width:140px;color:var(--faint)}
+h2{font-size:26px;margin:64px 0 10px;font-weight:650;padding-top:8px;scroll-margin-top:30px}
+h3{font-size:19px;margin:30px 0 6px;font-weight:600}
+p{margin:8px 0 14px}
+.muted{color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+ul,ol{padding-left:24px;margin:6px 0 16px}
+li{margin:3px 0}
+code{background:var(--code);border-radius:4px;padding:1px 6px;font:13.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#d4d4d4}
+pre{background:var(--code);border-radius:6px;padding:16px 18px;overflow-x:auto;font:13.5px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:10px 0 18px}
+pre code{background:none;padding:0}
+.callout{display:flex;gap:12px;background:#202020;border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin:16px 0}
+.callout .i{color:var(--muted);flex:none}
+.quote{border-left:3px solid var(--text);padding:2px 0 2px 16px;margin:18px 0;font-size:17px}
+table{border-collapse:collapse;width:100%;margin:12px 0 20px;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;background:#1d1d1d}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 20px}
+.card{border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:#1c1c1c}
+.card h4{margin:0 0 4px;font-size:15.5px;font-weight:600}
+.card p{margin:0;font-size:14.5px;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:2px}
+details{border-bottom:1px solid var(--line);padding:8px 0}
+details summary{cursor:pointer;font-weight:550;list-style:none}
+details summary::before{content:"▸";display:inline-block;width:18px;color:var(--faint);transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details > div{padding:6px 0 4px 18px}
+.figure{border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:10px;margin:18px 0 6px;cursor:zoom-in}
+.figure svg{display:block;width:100%;height:auto}
+.cap{font-size:13px;color:var(--faint);text-align:center;margin-bottom:24px}
+#zoom{position:fixed;inset:0;background:rgba(10,10,10,.96);z-index:50;display:none;overflow:auto;cursor:zoom-out;padding:30px}
+#zoom.open{display:block}
+#zoom svg{width:1700px;max-width:none;display:block;margin:0 auto}
+.day{border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin:12px 0;background:#1c1c1c}
+.day h4{margin:0;font-size:16px;font-weight:600}
+.day .plan{font-size:13px;color:var(--faint);margin:2px 0 10px}
+.day ul{list-style:none;padding:0;margin:0}
+.day li{padding-left:26px;position:relative;margin:5px 0;font-size:15px}
+.day li::before{content:"";position:absolute;left:0;top:6px;width:13px;height:13px;border:1.5px solid var(--faint);border-radius:3px}
+.day li.x{color:var(--muted)}
+.day .extra{font-size:12px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-left:6px}
+.foot{color:var(--faint);font-size:13px;margin-top:70px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:900px){
+  main{margin-left:0} #side{transform:translateX(-100%)} body.show #side{transform:none}
+  #toggle{left:12px} body.show #toggle{left:calc(var(--sideW) + 12px)}
+  .cols{grid-template-columns:1fr} h1{font-size:32px}
+}
+</style>
+</head>
+<body>
+<nav id="side">
+  <div class="brand"><b>FairPay AI</b><span>Group project</span></div>
+  <div class="grp">Start here</div>
+  <a href="#overview">Overview</a>
+  <a href="#problem">The problem</a>
+  <a href="#words">Words you'll see</a>
+  <div class="grp">The idea</div>
+  <a href="#remediation">What remediation means</a>
+  <a href="#roles">The three roles</a>
+  <a href="#journey">A query, start to finish</a>
+  <a href="#example">Worked example</a>
+  <div class="grp">How it's built</div>
+  <a href="#flowchart">Flowchart</a>
+  <a href="#flow-explained">Flowchart, explained</a>
+  <a href="#parts">The parts in detail</a>
+  <a href="#stack">Tech stack</a>
+  <a href="#run">Running it</a>
+  <div class="grp">Delivery</div>
+  <a href="#plan">5-day plan</a>
+  <a href="#rules">Rules we stick to</a>
+</nav>
+<button id="toggle" title="Show / hide menu (press \)">☰</button>
+
+<main>
+<div class="page">
+
+<h1 id="overview">FairPay AI</h1>
+<p class="sub">A system that checks payroll complaints, works out what someone should have been paid, and helps a person decide how to fix it.</p>
+
+<dl class="props">
+  <div><dt>Client (case study)</dt><dd>Kestrel Hospitality Group, around 18,000 hotel and restaurant staff in Australia</dd></div>
+  <div><dt>Type</dt><dd>Capstone, 5 days</dd></div>
+  <div><dt>Built with</dt><dd>Python 3.11, scikit-learn, ChromaDB, LangGraph, Gemini, FastAPI, Streamlit, SQLite</dd></div>
+  <div><dt>Source</dt><dd>FAIRPAY_AI_SRS.pdf (the requirements spec)</dd></div>
+</dl>
+
+<p>When staff think their pay is wrong, they raise a <b>pay query</b>. FairPay AI takes the whole pile of open queries and does four things with them:</p>
+<ol>
+  <li>Puts them in order, so the ones with the most money at stake get looked at first.</li>
+  <li>Works out, to the cent, what the employee should have been paid, using the company's own pay documents.</li>
+  <li>Has a few AI agents write up what went wrong and recommend what to do.</li>
+  <li>Stops there and waits. A manager reads it and makes the call. Only then is anything paid or sent to the employee.</li>
+</ol>
+
+<div class="quote">Models and documents give the facts. Normal code does the maths. AI writes the words. A person makes the decision.</div>
+<p class="muted">That one line explains most of the design choices you'll see below.</p>
+
+<!-- PROBLEM -->
+<h2 id="problem">The problem</h2>
+<p>Kestrel grew by buying three smaller companies. Each of its four payroll centres (Sydney, Melbourne, Brisbane, Perth) still runs on the payroll system it came with. They don't agree on much. Perth's system was bought from an American vendor, so it writes dates month first. The others write day first.</p>
+<p>Every week the HR service desk gets hundreds of pay queries. Most of them are fine once someone looks: a tax change the employee didn't notice, a salary packaging deduction they forgot about, a shift they swapped. But some are real mistakes, for example:</p>
+<ul>
+  <li>pay worked out from the roster when the time clock shows they worked more,</li>
+  <li>a promotion that payroll never applied,</li>
+  <li>a pay rise started from the wrong date,</li>
+  <li>a trainee still on the lower trainee rate after their traineeship ended,</li>
+  <li>two staff whose badges got swapped at the time clock.</li>
+</ul>
+<p>So the desk has two problems.</p>
+<h3>1. The real cases get stuck in the line</h3>
+<p>Queries are handled in the order they come in. A query worth hundreds of dollars can wait behind twenty that turn out to be nothing.</p>
+<h3>2. Getting the right number is harder than it looks</h3>
+<p>A pay period looks like "rate × hours", but it often isn't. Inside one month a rate can go up, or a traineeship can end and the employee moves onto a different classification with different rates. Each of those has its own pay schedule, and the five schedules are written from the same template, so they look almost the same. Use the wrong schedule, or one schedule for the whole month, and the back-pay is wrong. Nobody notices until the employee or the Fair Work Ombudsman does.</p>
+<div class="callout"><span class="i">→</span><div>What Kestrel asked for: rank the queue by money at stake, rebuild the pay properly from the right schedules, draft a recommendation, <b>and stop</b>. No pay changes and no letters go out because a model said so.</div></div>
+
+<!-- WORDS -->
+<h2 id="words">Words you'll see</h2>
+<p class="muted">You don't need to know Australian payroll to follow this project. These are the only terms that matter.</p>
+<table>
+<tr><th style="width:190px">Term</th><th>What it means here</th></tr>
+<tr><td>Pay query</td><td>An employee saying a payslip is wrong.</td></tr>
+<tr><td>Classification</td><td>The pay category someone is employed under. There are five: Front of House, Front of House Trainee, Kitchen, Kitchen Trainee, Night Audit. Each has its own pay schedule (a PDF).</td></tr>
+<tr><td>Rate window</td><td>A set of rates that starts on a certain date and runs until the next one starts. A schedule can have several in one year.</td></tr>
+<tr><td>Site allowance</td><td>A fixed amount paid for every calendar day in the period.</td></tr>
+<tr><td>Traineeship</td><td>A training period paid at a trainee rate. When it ends, the person moves onto another classification (the schedule says which).</td></tr>
+<tr><td>Verified hours</td><td>Hours the investigation confirmed from the time clock, the venue manager or the payroll vendor. We pay from these, never from the payslip.</td></tr>
+<tr><td>Piece</td><td>A run of days in the period paid on one classification at one rate window. A period gets split into pieces.</td></tr>
+<tr><td>Pay owed</td><td>What the period should have paid, worked out again and rounded once, to the cent.</td></tr>
+<tr><td>Difference</td><td>Pay owed minus amount paid. Positive means underpaid, negative means overpaid.</td></tr>
+<tr><td>The AUD 1.00 line</td><td>Pay is only corrected if it's out by a dollar or more, in either direction.</td></tr>
+<tr><td>Financial year</td><td>1 July to 30 June. None of the dates in the data have a year, so every date is a day inside this year.</td></tr>
+</table>
+
+<!-- REMEDIATION -->
+<h2 id="remediation">What remediation means</h2>
+<p><b>Remediation</b> just means putting it right. Once we know an employee was paid the wrong amount, remediation covers everything that follows: fixing the pay, paying back what is owed (or recovering an overpayment), and telling the employee clearly what happened.</p>
+<p>In this project, remediation always ends with one of three decisions, and only a Remediation Controller can make it:</p>
+<div class="cols">
+  <div class="card"><h4>Uphold pay</h4><p>The pay was right (or out by less than a dollar). Nothing changes and nothing is paid.</p></div>
+  <div class="card"><h4>Correct pay</h4><p>The pay was wrong. A pay correction statement is issued for the difference.</p></div>
+  <div class="card"><h4>Correct and compensate</h4><p>The pay is corrected, and the employee also gets a letter with an apology and a commitment payment, because Kestrel broke one of its own promises.</p></div>
+</div>
+
+<h3>Payroll commitments</h3>
+<p>Kestrel makes three promises about pay. When the record shows one was broken, it pays the employee a fixed amount on top of the correction. That amount is read from the <code>Payroll-Commitments.pdf</code> document, never typed into code.</p>
+<table>
+<tr><th style="width:70px">Code</th><th>The promise that was broken</th></tr>
+<tr><td>PC1</td><td>An agreed classification was not applied.</td></tr>
+<tr><td>PC2</td><td>Hours were paid from the roster without checking the time clock.</td></tr>
+<tr><td>PC3</td><td>A timesheet error was reported but not investigated.</td></tr>
+</table>
+<p>A commitment payment is due whether the person was underpaid or overpaid. It is only ever paid together with a pay correction.</p>
+
+<h3>The settled amount</h3>
+<p>This is the final number that changes hands:</p>
+<ul>
+  <li><b>Correct pay:</b> settled amount = the difference.</li>
+  <li><b>Correct and compensate:</b> settled amount = the difference + the commitment payments.</li>
+  <li>If it's positive, it's <i>paid to the employee</i>. If it's negative, it's <i>recovered</i> from them. If it's zero, <i>nothing is due</i>.</li>
+</ul>
+
+<h3>What the employee receives</h3>
+<ul>
+  <li><b>Pay correction statement:</b> the only place the employee sees the corrected figures, piece by piece.</li>
+  <li><b>Remediation letter:</b> only on "correct and compensate". Plain words, one apology, the commitment payments, and the next steps from the right resolution guide. It doesn't quote the corrected pay; the statement does that.</li>
+</ul>
+<div class="callout"><span class="i">!</span><div>Why figures only go out in writing: the HR service desk talks to employees on the phone, and a number said on the phone becomes a promise Kestrel has to keep. So desk agents can see a query's status, but never its amounts.</div></div>
+
+<!-- ROLES -->
+<h2 id="roles">The three roles</h2>
+<p>Everyone signs in. What you can see depends on your role, and the API enforces it, not just the dashboard. If someone calls the API directly for a page their role doesn't cover, they get a 403.</p>
+<table>
+<tr><th style="width:190px">Role</th><th>Who they are</th><th>What they can do</th></tr>
+<tr><td><b>Payroll Analyst</b></td><td>Investigates queries.</td><td>Sees the ranked queue and full query details, opens an assessment (this starts the AI agents), reads the audit trail, uses the chat with full figures. <b>Cannot decide.</b></td></tr>
+<tr><td><b>Remediation Controller</b></td><td>The person who approves.</td><td>Everything an analyst can do, plus the Decision queue, where they pick one of the three outcomes and give a reason. <b>Cannot decide an assessment they opened themselves.</b></td></tr>
+<tr><td><b>HR Service Desk Agent</b></td><td>Takes calls from employees.</td><td>Only the payroll chat. Can ask about rates and rules, and can ask where a query has got to, but only hears its status and when it last changed. <b>Never sees a figure.</b></td></tr>
+</table>
+<p>The split between investigating and approving comes from Kestrel's Pay Query Policy. One person digs into a case; a different person signs it off. It's the same idea as two people needing to sign a cheque.</p>
+<p class="muted">The database is seeded with 15 accounts: 3 controllers, 6 analysts and 6 service desk agents.</p>
+
+<!-- JOURNEY -->
+<h2 id="journey">A query, start to finish</h2>
+<ol>
+  <li><b>It shows up in the queue.</b> When the service starts, every open query is priced by the pay calculator and scored by the models. The queue is sorted by money at stake, biggest first.</li>
+  <li><b>An analyst opens it.</b> The detail page shows the pay split into pieces, the rates used and which PDF they came from, the verified hours, the employee notes, the predicted category, the correction score and the effort estimate. No AI has been used yet.</li>
+  <li><b>The analyst starts an assessment.</b> They write what they want looked at, and five agents run one after another: planner, correction risk analyst, category analyst, pay rate advisor, writer. Each one is a single Gemini call. They get the facts handed to them and they write about them. They don't work anything out.</li>
+  <li><b>The run pauses.</b> The assessment is saved with status "pending" and a recommended decision. The paused run is written to disk, so a restart doesn't lose it.</li>
+  <li><b>A different controller decides.</b> They read the assessment on the Decision queue, pick an outcome and give a reason.</li>
+  <li><b>The documents get written.</b> Correct pay leads to the pay statement agent. Correct and compensate leads to the letter agent, then the statement agent. Uphold pay writes nothing.</li>
+  <li><b>Everything is recorded.</b> Decision, settled amount, letter, statement and every AI call (with its size and latency) go into the database for the audit trail.</li>
+</ol>
+<p class="muted">So one assessment costs 5 AI calls before the decision, then 0, 1 or 2 more depending on the outcome.</p>
+
+<!-- EXAMPLE -->
+<h2 id="example">Worked example</h2>
+<p>The spec gives one published example: <code>PQR-SYD-0041927</code>. It's a Sydney Front of House trainee, paid monthly, 1 to 31 January (31 days), with 152.50 verified hours from a time clock export. The traineeship ended on 9 January, so from 10 January they should have been on the Front of House rate. Payroll paid the trainee rate for the whole month.</p>
+<p>The month splits into three pieces. Using the spec's illustrative rates:</p>
+<table>
+<tr><th>Piece</th><th class="n">Days</th><th>Paid on</th><th class="n">Hours (shared by days)</th><th class="n">Pay (AUD)</th></tr>
+<tr><td>01 Jan – 09 Jan</td><td class="n">9</td><td>Front of House Trainee, rates from 01 Jul</td><td class="n">44.27</td><td class="n">994.66</td></tr>
+<tr><td>10 Jan – 17 Jan</td><td class="n">8</td><td>Front of House, rates from 01 Jul</td><td class="n">39.35</td><td class="n">1042.79</td></tr>
+<tr><td>18 Jan – 31 Jan</td><td class="n">14</td><td>Front of House, rates from 18 Jan (a pay rise)</td><td class="n">68.87</td><td class="n">1874.10</td></tr>
+</table>
+<p>Adding the exact (unrounded) pieces and rounding once gives <b>AUD 3911.55</b> with those illustrative rates.</p>
+<p>With the rates in the real schedules, the same code gives <b>AUD 4203.47 owed against AUD 3688.40 paid. The employee was underpaid by AUD 515.07.</b> The record also shows PC1 broken, so "correct and compensate" would settle the 515.07 plus the PC1 payment from the commitments document.</p>
+<div class="callout"><span class="i">→</span><div>Note the second piece. Nothing about the employee changed on 18 January, but the Front of House rate did. That's exactly the kind of split a person working quickly would miss.</div></div>
+
+</div><!-- /page -->
+
+<!-- FLOWCHART -->
+<div class="wide">
+<h2 id="flowchart">Flowchart</h2>
+<p class="muted">Click the chart to open it full size. Press Esc to close.</p>
+<div class="figure" id="fig">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 2190" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-label="FairPay AI project flowchart"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#a3a3a3"/></marker>
+<marker id="d" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b6b6b"/></marker></defs><rect x="40" y="20" width="1720" height="215" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="62" y="54" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">A  ·  OFFLINE BUILD  (RUN ONCE, IN ORDER)</text><rect x="80" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="250.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Database setup</text><text x="250.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">SQLite, 6 tables</text><text x="250.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">15 seeded user accounts</text><circle cx="100" cy="95" r="13" fill="#ececec"/><text x="100" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">1</text><path d="M 420 140 L 494 140" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="500" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="670.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Data pipeline</text><text x="670.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">clean 5 raw CSV extracts</text><text x="670.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">+ data-quality report</text><circle cx="520" cy="95" r="13" fill="#ececec"/><text x="520" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">2</text><path d="M 840 140 L 914 140" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="920" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1090.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Model training</text><text x="1090.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">correction, effort, category</text><text x="1090.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">saved sklearn pipelines</text><circle cx="940" cy="95" r="13" fill="#ececec"/><text x="940" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">3</text><path d="M 1260 140 L 1334 140" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="1340" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1510.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Knowledge indexing</text><text x="1510.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">16 company PDFs</text><text x="1510.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">into a ChromaDB store</text><circle cx="1360" cy="95" r="13" fill="#ececec"/><text x="1360" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">4</text><rect x="40" y="265" width="1720" height="250" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="62" y="299" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">B  ·  USERS AND ACCESS</text><rect x="80" y="315" width="330" height="52" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="245.0" y="347.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Remediation Controller</text><path d="M 410 341 L 560 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="377" width="330" height="52" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="245.0" y="409.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Payroll Analyst</text><path d="M 410 403 L 560 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="439" width="330" height="52" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="245.0" y="471.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">HR Service Desk Agent</text><path d="M 410 465 L 560 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="566" y="345" width="420" height="132" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="776.0" y="395.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Streamlit dashboard</text><text x="776.0" y="417.0" text-anchor="middle" font-size="15" fill="#9b9b9b">5 pages, shown by role</text><text x="776.0" y="439.0" text-anchor="middle" font-size="15" fill="#9b9b9b">displays only, no business rules</text><path d="M 986 411 L 1120 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><text x="1053" y="400" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="middle">REST + token</text><rect x="1126" y="345" width="590" height="132" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1421.0" y="395.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">FastAPI service</text><text x="1421.0" y="417.0" text-anchor="middle" font-size="15" fill="#9b9b9b">sign-in and role check on every request</text><text x="1421.0" y="439.0" text-anchor="middle" font-size="15" fill="#9b9b9b">/queue  /assessments  /decision  /chat/ask  /audit</text><rect x="40" y="545" width="1150" height="1580" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="62" y="579" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">C  ·  ASSESSMENT WORKFLOW  (LANGGRAPH)</text><rect x="1220" y="545" width="540" height="1580" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="1242" y="579" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">D  ·  SHARED SERVICES AND DATA</text><path d="M 1420 477 L 1420 515 L 615 515 L 615 595" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="600" width="470" height="92" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="615.0" y="641.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Pay query arrives</text><text x="615.0" y="663.0" text-anchor="middle" font-size="15" fill="#9b9b9b">an employee says their pay is wrong</text><path d="M 615 692 L 615 722" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="728" width="470" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="615.0" y="768.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Ranked query queue</text><text x="615.0" y="790.0" text-anchor="middle" font-size="15" fill="#9b9b9b">correction chance, effort hours, category</text><text x="615.0" y="812.0" text-anchor="middle" font-size="15" fill="#9b9b9b">most money at stake comes first</text><path d="M 615 840 L 615 870" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="876" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="917.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Planner agent</text><text x="615.0" y="939.0" text-anchor="middle" font-size="15" fill="#9b9b9b">decides what needs checking</text><path d="M 615 968 L 615 998" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1004" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1045.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Correction risk analyst</text><text x="615.0" y="1067.0" text-anchor="middle" font-size="15" fill="#9b9b9b">explains what drives the correction score</text><path d="M 615 1096 L 615 1126" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1132" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1173.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Category analyst</text><text x="615.0" y="1195.0" text-anchor="middle" font-size="15" fill="#9b9b9b">checks whether the notes agree</text><path d="M 615 1224 L 615 1254" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1260" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1301.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Pay rate advisor</text><text x="615.0" y="1323.0" text-anchor="middle" font-size="15" fill="#9b9b9b">states pay pieces, rates and difference</text><path d="M 615 1352 L 615 1382" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1388" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1429.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Writer agent</text><text x="615.0" y="1451.0" text-anchor="middle" font-size="15" fill="#9b9b9b">writes the assessment + recommendation</text><polygon points="615,1521 795.0,1596.0 615,1671 435.0,1596.0" fill="#262626" stroke="#ffffff" stroke-width="2.5"/><text x="615" y="1590.0" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">HUMAN DECISION</text><text x="615" y="1612.0" text-anchor="middle" font-size="14" fill="#9b9b9b">by a different</text><text x="615" y="1630.0" text-anchor="middle" font-size="14" fill="#9b9b9b">Remediation Controller</text><rect x="835.0" y="1561" width="270" height="70" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="970.0" y="1591.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Run paused</text><text x="970.0" y="1613.0" text-anchor="middle" font-size="15" fill="#9b9b9b">saved to disk, survives restart</text><path d="M 835.0 1596 L 801.0 1596" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#d)"/><path d="M 615 1671 L 615 1699 L 245.0 1699 L 245.0 1727" fill="none" stroke="#ffffff" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="1731" width="330" height="82" rx="8" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="245.0" y="1767.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Uphold pay</text><text x="245.0" y="1789.0" text-anchor="middle" font-size="15" fill="#9b9b9b">pay stands, nothing paid</text><path d="M 615 1671 L 615 1699 L 605.0 1699 L 605.0 1727" fill="none" stroke="#ffffff" stroke-width="2" marker-end="url(#a)"/><rect x="440" y="1731" width="330" height="82" rx="8" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="605.0" y="1767.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Correct and compensate</text><text x="605.0" y="1789.0" text-anchor="middle" font-size="15" fill="#9b9b9b">fix pay + commitment payment</text><path d="M 615 1671 L 615 1699 L 965.0 1699 L 965.0 1727" fill="none" stroke="#ffffff" stroke-width="2" marker-end="url(#a)"/><rect x="800" y="1731" width="330" height="82" rx="8" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="965.0" y="1767.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Correct pay</text><text x="965.0" y="1789.0" text-anchor="middle" font-size="15" fill="#9b9b9b">fix the difference</text><rect x="440" y="1861" width="330" height="82" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="605.0" y="1897.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Remediation letter agent</text><text x="605.0" y="1919.0" text-anchor="middle" font-size="15" fill="#9b9b9b">apology + commitment payment</text><rect x="800" y="1861" width="330" height="82" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="965.0" y="1897.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Pay statement agent</text><text x="965.0" y="1919.0" text-anchor="middle" font-size="15" fill="#9b9b9b">the corrected pay, piece by piece</text><path d="M 605 1813 L 605 1857" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><path d="M 965 1813 L 965 1857" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><path d="M 770 1902 L 796 1902" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="1996" width="1050" height="78" rx="8" fill="#2c2c2c" stroke="#ececec" stroke-width="1.5"/><text x="605.0" y="2030.0" text-anchor="middle" font-size="18" font-weight="600" fill="#ececec">Outcome recorded</text><text x="605.0" y="2052.0" text-anchor="middle" font-size="15" fill="#9b9b9b">decision, settled amount, documents and every LLM call go to fairpay.db</text><path d="M 245 1813 L 245 1992" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><path d="M 965 1943 L 965 1992" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="1260" y="600" width="460" height="150" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="648.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Pay calculator (tools)</text><text x="1490.0" y="670.0" text-anchor="middle" font-size="15" fill="#9b9b9b">splits the period at every rate change</text><text x="1490.0" y="692.0" text-anchor="middle" font-size="15" fill="#9b9b9b">exact decimals, rounds once at the end</text><text x="1490.0" y="714.0" text-anchor="middle" font-size="15" fill="#9b9b9b">flags any difference of AUD 1.00 or more</text><rect x="1260" y="778" width="460" height="92" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="819.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Saved ML models</text><text x="1490.0" y="841.0" text-anchor="middle" font-size="15" fill="#9b9b9b">correction, effort, category</text><rect x="1260" y="898" width="460" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="938.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">ChromaDB knowledge base</text><text x="1490.0" y="960.0" text-anchor="middle" font-size="15" fill="#9b9b9b">pay schedules, policies, guides</text><text x="1490.0" y="982.0" text-anchor="middle" font-size="15" fill="#9b9b9b">rates read at run time, never hardcoded</text><rect x="1260" y="1038" width="460" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="1078.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Google Gemini</text><text x="1490.0" y="1100.0" text-anchor="middle" font-size="15" fill="#9b9b9b">one call per agent, writes text only</text><text x="1490.0" y="1122.0" text-anchor="middle" font-size="15" fill="#9b9b9b">never calculates money</text><rect x="1260" y="1178" width="460" height="92" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="1219.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">checkpoint.db</text><text x="1490.0" y="1241.0" text-anchor="middle" font-size="15" fill="#9b9b9b">holds paused runs until a decision</text><rect x="1260" y="1298" width="460" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="1338.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">fairpay.db  (SQLite)</text><text x="1490.0" y="1360.0" text-anchor="middle" font-size="15" fill="#9b9b9b">users, runs, queries, decisions</text><text x="1490.0" y="1382.0" text-anchor="middle" font-size="15" fill="#9b9b9b">llm_calls, chat_turns</text><rect x="1260" y="1458" width="460" height="150" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="1490.0" y="1506.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Payroll chatbot (RAG)</text><text x="1490.0" y="1528.0" text-anchor="middle" font-size="15" fill="#9b9b9b">one LLM call per question</text><text x="1490.0" y="1550.0" text-anchor="middle" font-size="15" fill="#9b9b9b">refuses if the documents don't cover it</text><text x="1490.0" y="1572.0" text-anchor="middle" font-size="15" fill="#9b9b9b">service desk hears status, never figures</text><path d="M 1640 477 L 1640 510 L 1745 510 L 1745 1533 L 1724 1533" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><text x="1668" y="502" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="start">/chat/ask</text><path d="M 850.0 1306.0 L 1150 1306.0 L 1150 675.0 L 1256 675.0" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#d)"/><text x="862.0" y="1298.0" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="start">exact pay calculation</text><path d="M 850.0 784.0 L 1110 784.0 L 1110 824.0 L 1256 824.0" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#d)"/><text x="862.0" y="776.0" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="start">predictions</text><rect x="60" y="2150" width="26" height="18" rx="4" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="96" y="2165" font-size="15" fill="#9b9b9b">Plain code or data</text><rect x="320" y="2150" width="26" height="18" rx="4" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="5,3"/><text x="356" y="2165" font-size="15" fill="#9b9b9b">AI agent (writes text only)</text><rect x="630" y="2150" width="26" height="18" rx="4" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="666" y="2165" font-size="15" fill="#9b9b9b">Human decision</text><line x1="860" y1="2159" x2="900" y2="2159" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5"/><text x="910" y="2165" font-size="15" fill="#9b9b9b">Uses a service</text></svg>
+</div>
+<div class="cap">FairPay AI, end to end. Solid boxes are plain code or data, dashed boxes are AI agents, white boxes are the human decision.</div>
+</div>
+
+<div class="page">
+<h2 id="flow-explained">Flowchart, explained</h2>
+
+<h3>A · Offline build</h3>
+<p>Four scripts, run once, in order. Each one only reads what the one before it produced.</p>
+<ol>
+  <li><code>run_database_setup.py</code> creates the SQLite database with its 6 tables and the 15 accounts. Running it again doesn't duplicate anything.</li>
+  <li><code>run_data_pipeline.py</code> cleans the five messy CSV extracts and writes a JSON report that counts every problem it found and fixed.</li>
+  <li><code>run_model_training.py</code> trains the three models, saves them, and records their scores against the minimums the spec sets.</li>
+  <li><code>run_knowledge_indexing.py</code> turns the 16 PDFs into a searchable store, then reads every pay schedule and commitment payment back out to prove it can.</li>
+</ol>
+
+<h3>B · Users and access</h3>
+<p>People sign in on the Streamlit dashboard. Every request then goes to the FastAPI service with a session token, and the service checks the role before doing anything. The dashboard only displays what the service sends back. It has no business rules of its own and reads no files.</p>
+
+<h3>C · Assessment workflow</h3>
+<p>This is a LangGraph graph of ten steps. The first step loads the query, notes, correction score and category with no AI at all. Then five agents run in order, each making one call. The pay rate advisor is handed the exact pay figures the calculator produced just before it runs, so it can only quote, not compute.</p>
+<p>At the diamond the graph pauses using LangGraph's <code>interrupt</code>. The state is checkpointed to <code>checkpoint.db</code>, so the run can be picked up later, even after a restart. When a controller decides, the graph resumes and branches:</p>
+<ul>
+  <li><b>Uphold pay</b> goes straight to recording the outcome.</li>
+  <li><b>Correct pay</b> goes to the pay statement agent, then records.</li>
+  <li><b>Correct and compensate</b> goes to the letter agent first, then the statement agent (so the statement can mention the letter), then records.</li>
+</ul>
+
+<h3>D · Shared services and data</h3>
+<p>Everything in section C leans on these.</p>
+<ul>
+  <li><b>Pay calculator</b> does all the money maths. Nothing else does.</li>
+  <li><b>Saved ML models</b> give the correction score, the effort estimate and the category.</li>
+  <li><b>ChromaDB</b> holds the PDFs, split into passages. Rates are read from here when the service starts.</li>
+  <li><b>Gemini</b> writes text for the agents and the chat.</li>
+  <li><b>checkpoint.db</b> keeps paused runs. <b>fairpay.db</b> keeps everything else.</li>
+  <li><b>Payroll chatbot</b> sits beside the workflow and answers questions from the documents.</li>
+</ul>
+
+<!-- PARTS -->
+<h2 id="parts">The parts in detail</h2>
+<p class="muted">Open whichever one you need.</p>
+
+<details><summary>Data pipeline: cleaning five messy extracts</summary><div>
+<p>The raw files come from four payroll systems, a case-management system and the HR desk. Everything arrives as text and the problems are intentional. Some examples:</p>
+<ul>
+  <li>exact duplicate rows,</li>
+  <li>"missing" written as blank, <code>-</code>, <code>N/A</code>, <code>none</code>, <code>?</code> or <code>Not recorded</code>,</li>
+  <li>yes and no written as Y, TRUE, 1, N, FALSE, 0,</li>
+  <li>dates in numbers (day first or month first depending on the system) or with month names, and some dates that don't exist, like 30 Feb,</li>
+  <li>money as <code>$1,221.46</code>, <code>AUD 560.76</code>, <code>450.00 CR</code> or <code>(450.00)</code>, where the last two are credits and become negative,</li>
+  <li>hours in h, hrs or minutes, durations like <code>4h 15m</code>, counts like <code>6 letters</code>,</li>
+  <li>pay periods written backwards, day counts and hour totals that don't match their parts,</li>
+  <li>notes with leftover HTML, odd characters, or written entirely in capitals.</li>
+</ul>
+<p>Each fix is a small function in <code>common_cleaning.py</code>. Anything we can't read raises an error instead of being guessed. Rows are only removed if they're duplicates or have no answer. Then <code>quality_profiler.py</code> measures the before and after, so every repair is backed by a count.</p>
+<table>
+<tr><th>Extract</th><th class="n">Received</th><th class="n">Kept</th></tr>
+<tr><td>pay_queries_train</td><td class="n">24,480</td><td class="n">23,528</td></tr>
+<tr><td>pay_queries_eval</td><td class="n">6,120</td><td class="n">5,870</td></tr>
+<tr><td>remediation_effort_train</td><td class="n">22,440</td><td class="n">21,304</td></tr>
+<tr><td>remediation_effort_eval</td><td class="n">5,610</td><td class="n">5,322</td></tr>
+<tr><td>employee_query_notes</td><td class="n">28,562</td><td class="n">26,574</td></tr>
+</table>
+<p class="muted">Counts are the expected output given in the spec.</p>
+</div></details>
+
+<details><summary>Machine learning: three models</summary><div>
+<table>
+<tr><th>Model</th><th>Algorithm</th><th>Predicts</th><th>Reference score (spec)</th></tr>
+<tr><td>Correction</td><td>GradientBoostingClassifier</td><td>Chance a query ends in a pay correction, banded High / Medium / Low</td><td>ROC AUC 0.8095</td></tr>
+<tr><td>Effort</td><td>LinearRegression</td><td>Analyst hours to resolve it. Above a threshold, a senior officer takes it</td><td>R² 0.8197, MAE 0.57 h</td></tr>
+<tr><td>Category</td><td>TF-IDF + LogisticRegression</td><td>Which of 8 categories an employee note describes</td><td>Macro F1 0.9243</td></tr>
+</table>
+<p>The two tabular models are saved as full scikit-learn pipelines (median fill for numbers, most-frequent fill plus one-hot encoding for categories), so a live query goes through exactly the same preparation as the training data. Each one is scored on held-out data and on its training data, so we can see the gap.</p>
+<p>A query usually has several notes. Each note gets a category, the query takes the majority, and we report how far the notes agree. Low agreement is a signal for the controller.</p>
+<p>The correction score is a <i>prediction</i>. It helps with ranking, but it doesn't decide whether the pay was wrong. The pay calculator does.</p>
+</div></details>
+
+<details><summary>Knowledge base: 16 company PDFs</summary><div>
+<p>Five pay schedules, the payroll commitments, the pay query policy, eight resolution guides (one per category) and a casebook of past queries. They're split at their numbered headings, then into passages that only break at sentence ends, so a rate sentence is never cut in half. The passages are stored in ChromaDB with sentence-transformer embeddings.</p>
+<p>The important rule: <b>no rate, rate date, traineeship move or commitment payment exists anywhere in the code or config.</b> When the service starts, each classification's schedule is read <i>in full</i> from its own PDF, and the rate sentences are matched with fixed patterns. We never use a similarity search for rates, because the schedules look so alike that a search would happily return the wrong classification's rate.</p>
+</div></details>
+
+<details><summary>Pay calculator: where the money is worked out</summary><div>
+<ol>
+  <li>Read the verified hours and check they're whole quarter hours and fit in the period.</li>
+  <li>Walk through the period day by day, working out which classification was owed and which rate window applied. Start a new piece whenever either changes.</li>
+  <li>Share the hours across the pieces by number of days.</li>
+  <li>Price each piece: site allowance × days, plus hours × hourly rate (day and night rates for Night Audit).</li>
+  <li>Add the exact piece amounts and round <b>once</b>, at the total, to the cent.</li>
+  <li>Compare with what was paid: difference, direction, and whether it crosses the AUD 1.00 line.</li>
+  <li>Add up any commitment payments that are due.</li>
+</ol>
+<p>All of it runs on <code>Decimal</code> and <code>Fraction</code>. A float can't hold cents exactly, and a payslip has to be exact.</p>
+</div></details>
+
+<details><summary>AI agents: seven agents, one call each</summary><div>
+<table>
+<tr><th>Agent</th><th>Writes</th></tr>
+<tr><td>Planner</td><td>Priority, 3 to 5 things to check, and why</td></tr>
+<tr><td>Correction risk analyst</td><td>The main drivers of the score, where the hours came from, a short summary</td></tr>
+<tr><td>Category analyst</td><td>The category, how confident to be, and the evidence. Says so if the notes disagree</td></tr>
+<tr><td>Pay rate advisor</td><td>The classifications owed and their rates, the pay check, any broken commitments</td></tr>
+<tr><td>Writer</td><td>The assessment and one recommended decision</td></tr>
+<tr><td>Remediation letter</td><td>Subject and letter to the employee (correct and compensate only)</td></tr>
+<tr><td>Pay statement</td><td>Pieces, totals, commitments, settlement</td></tr>
+</table>
+<p>Each agent replies in fixed labelled fields, which we parse back. If a label is missing, or the recommendation isn't one of the three options, the run fails loudly instead of saving rubbish. The pay statement is also checked: every piece amount has to appear exactly once.</p>
+</div></details>
+
+<details><summary>Database and audit trail</summary><div>
+<p>Six tables in <code>fairpay.db</code>:</p>
+<ul>
+  <li><code>user_accounts</code>: logins, with PBKDF2-hashed passwords and a per-account salt.</li>
+  <li><code>agent_runs</code>: every workflow run and its status (running, awaiting decision, complete, failed).</li>
+  <li><code>pay_queries</code>: every assessment, with the tools' figures, the agents' text, the decision outcome and the settlement.</li>
+  <li><code>controller_decisions</code>: who decided what, and why.</li>
+  <li><code>llm_calls</code>: every AI call, with prompt and reply size and latency.</li>
+  <li><code>chat_turns</code>: every chat question and answer.</li>
+</ul>
+<p>Money is stored as exact text, not as floats.</p>
+</div></details>
+
+<details><summary>REST API</summary><div>
+<table>
+<tr><th>Endpoint</th><th>Does</th></tr>
+<tr><td><code>POST /auth/signin</code>, <code>/auth/signout</code></td><td>Get or end a session token</td></tr>
+<tr><td><code>GET /queue</code></td><td>The ranked queue, filterable by underpaid, overpaid or correct</td></tr>
+<tr><td><code>GET /queue/{ref}</code></td><td>Full detail for one query, no AI calls</td></tr>
+<tr><td><code>POST /assessments</code></td><td>Runs the five agents and returns 201 once paused</td></tr>
+<tr><td><code>GET /queries</code></td><td>Assessments by status</td></tr>
+<tr><td><code>POST /queries/{id}/decision</code></td><td>Controller decision, resumes the run</td></tr>
+<tr><td><code>GET /queries/{id}/calls</code></td><td>AI calls made versus calls expected</td></tr>
+<tr><td><code>POST /chat/ask</code>, <code>GET /chat/turns</code>, <code>GET /audit/chat-turns</code></td><td>The chat and its log</td></tr>
+</table>
+<p>Errors are predictable: 401 when not signed in, 403 for the wrong role or deciding your own assessment, 404 for unknown items, 409 when something has already been decided, 422 for bad input, and 502 when something breaks (the run is marked failed, not left hanging).</p>
+</div></details>
+
+<details><summary>Dashboard</summary><div>
+<ul>
+  <li><b>Query queue:</b> headline counts, a direction filter, and the ranked table.</li>
+  <li><b>Query detail:</b> tabs for Pay owed, Employee and hours, Notes and models, plus the form that starts an assessment.</li>
+  <li><b>Decision queue:</b> pending assessments and the decision form. Controllers only.</li>
+  <li><b>Audit trail:</b> decided queries, their documents, AI call budget, and the chat log.</li>
+  <li><b>Payroll chat:</b> open to everyone.</li>
+</ul>
+</div></details>
+
+<details><summary>Payroll chatbot</summary><div>
+<p>One Gemini call per question. That single call both classifies the question (pay rates, payroll rules, employee advice, query status, out of scope) and answers it from the retrieved passages plus all five pay schedules.</p>
+<ul>
+  <li>It never searches the casebook.</li>
+  <li>If the closest passage isn't close enough, it refuses instead of guessing.</li>
+  <li>It remembers your last few questions, so "and who approves it?" makes sense.</li>
+  <li>Questions about a specific query are answered from the database, not by the model. Analysts and controllers get the figures; service desk agents get the status only.</li>
+</ul>
+</div></details>
+
+<!-- STACK -->
+<h2 id="stack">Tech stack</h2>
+<table>
+<tr><th style="width:190px">Layer</th><th>What we use</th></tr>
+<tr><td>Language</td><td>Python 3.11</td></tr>
+<tr><td>Data</td><td>pandas</td></tr>
+<tr><td>Models</td><td>scikit-learn, joblib</td></tr>
+<tr><td>Search</td><td>ChromaDB, sentence-transformers, pypdf</td></tr>
+<tr><td>Agents</td><td>LangGraph (with a SQLite checkpointer), Google Gemini through google-genai</td></tr>
+<tr><td>Storage</td><td>SQLite through SQLAlchemy</td></tr>
+<tr><td>Service</td><td>FastAPI, Pydantic, Uvicorn (port 8081)</td></tr>
+<tr><td>UI</td><td>Streamlit (port 8080)</td></tr>
+<tr><td>Tests</td><td>pytest, 50 checks in <code>tests.py</code></td></tr>
+</table>
+
+<!-- RUN -->
+<h2 id="run">Running it</h2>
+<pre><code>python3.11 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+# put GEMINI key + model name in .env
+
+python run_database_setup.py
+python run_data_pipeline.py
+python run_model_training.py
+python run_knowledge_indexing.py
+
+python run_api_service.py           # terminal 1
+streamlit run run_dashboard.py      # terminal 2
+
+python -m pytest tests.py</code></pre>
+<p class="muted">The API won't start if any earlier step is missing. It lists what's missing and which script creates it. Before running the full test suite, delete <code>fairpay.db</code> and <code>checkpoint.db</code> and run the setup again.</p>
+
+<!-- PLAN -->
+<h2 id="plan">5-day plan</h2>
+<p>This follows the capstone tracker, but we've moved work earlier wherever we could. The aim is to have the whole system working end to end by the end of Day 3. That leaves Days 4 and 5 for MLOps, hardening and presenting, so we aren't rushing at the end. Items marked <span class="tag">ahead</span> are pulled forward from a later day.</p>
+
+<div class="day"><h4>Day 1 · Scoping, data engineering, repo, architecture</h4>
+<div class="plan">Tracker: problem scoping, data engineering, repo setup, architecture</div>
+<ul>
+<li>Read the spec together, agree on the problem statement and these notes</li>
+<li>Repo, virtual env, <code>.env</code>, branch rules, folder structure from the spec</li>
+<li>Architecture diagram (this page)</li>
+<li>Database models, repository functions, <code>run_database_setup.py</code></li>
+<li>All of <code>data_pipeline/</code>: shared cleaners, the three cleaning runs, the quality report</li>
+<li>Knowledge base: PDF extraction, section split, chunking, Chroma index, schedule reader <span class="extra">ahead</span></li>
+</ul></div>
+
+<div class="day"><h4>Day 2 · Models, experiment tracking, baselines</h4>
+<div class="plan">Tracker: model development, experiment tracking, baselines, comparisons</div>
+<ul>
+<li>Feature builder and the shared sklearn pipeline</li>
+<li>Correction, effort and category models, trained and saved</li>
+<li>Baselines to beat: always-the-mean for effort (from the spec), a simple logistic regression for correction, majority class for category</li>
+<li>Comparison table of train vs held-out scores, logged to <code>model_metrics.json</code> for every run</li>
+<li>Pay calculator in <code>pay_tools.py</code>, checked against the worked example (3 pieces, AUD 515.07) <span class="extra">ahead</span></li>
+<li>Prediction and retrieval tools <span class="extra">ahead</span></li>
+</ul></div>
+
+<div class="day"><h4>Day 3 · Automation, REST API, integration</h4>
+<div class="plan">Tracker: pipeline automation, deployment as REST API, integration</div>
+<ul>
+<li>Seven agents, the reply parser, LangGraph graph with interrupt and checkpointer</li>
+<li>FastAPI routes, schemas, sign-in, role guard, failure handler</li>
+<li>Prerequisite check in <code>run_api_service.py</code> so the build order is enforced</li>
+<li>Streamlit pages wired to the API <span class="extra">ahead</span></li>
+<li>Chatbot with refusal and memory <span class="extra">ahead</span></li>
+<li>First full run through: analyst assesses, another controller decides, documents written</li>
+</ul></div>
+
+<div class="day"><h4>Day 4 · MLOps, CI/CD, monitoring, polish</h4>
+<div class="plan">Tracker: advanced MLOps, CI/CD, monitoring, alerts, polish</div>
+<ul>
+<li>CI on every push: lint plus the non-LLM tests (cleaning, models, knowledge, pay maths, access)</li>
+<li>Model check in CI that fails the build if a model drops below its minimum</li>
+<li>Monitoring from what we already log: LLM calls vs expected per run, latency, failed runs, refused chat questions</li>
+<li>Alerts: failed runs and over-budget call counts highlighted in the audit trail</li>
+<li>Edge cases: own-assessment refusal, double decisions (409), restart while paused</li>
+<li>UI clean-up and consistent wording</li>
+</ul></div>
+
+<div class="day"><h4>Day 5 · Final integration, docs, dry run, slides</h4>
+<div class="plan">Tracker: final integration, documentation, dry run, slide preparation</div>
+<ul>
+<li>Fresh-clone run of every step, then all 50 tests on an empty database</li>
+<li>README and these notes finalised</li>
+<li>Demo script: one login per role, one query per outcome</li>
+<li>Slides: problem, architecture, worked example, live demo, results</li>
+<li>Two full dry runs, timed, with a backup recording</li>
+</ul></div>
+
+<!-- RULES -->
+<h2 id="rules">Rules we stick to</h2>
+<ul>
+  <li><b>No hardcoded rates or payments.</b> Ever. They come from the PDFs at run time.</li>
+  <li><b>AI never does maths.</b> Agents get finished figures and are told to quote them as given.</li>
+  <li><b>Round once.</b> Exact pieces, one rounding at the total.</li>
+  <li><b>Refuse rather than guess.</b> An unreadable date, a strange money format or a vague chat question gives an error or a refusal, not a guess.</li>
+  <li><b>A person decides.</b> Nothing is paid or sent until a controller who didn't open the case approves it.</li>
+  <li><b>Everything is logged.</b> Every run, decision, AI call and chat question can be looked up later.</li>
+</ul>
+
+<p class="foot">FairPay AI · capstone project notes · based on FAIRPAY_AI_SRS.pdf. Kestrel Hospitality Group is the case-study company in the spec.</p>
+</div>
+</main>
+
+<div id="zoom"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 2190" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-label="FairPay AI project flowchart"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#a3a3a3"/></marker>
+<marker id="d" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b6b6b"/></marker></defs><rect x="40" y="20" width="1720" height="215" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="62" y="54" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">A  ·  OFFLINE BUILD  (RUN ONCE, IN ORDER)</text><rect x="80" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="250.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Database setup</text><text x="250.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">SQLite, 6 tables</text><text x="250.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">15 seeded user accounts</text><circle cx="100" cy="95" r="13" fill="#ececec"/><text x="100" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">1</text><path d="M 420 140 L 494 140" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="500" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="670.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Data pipeline</text><text x="670.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">clean 5 raw CSV extracts</text><text x="670.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">+ data-quality report</text><circle cx="520" cy="95" r="13" fill="#ececec"/><text x="520" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">2</text><path d="M 840 140 L 914 140" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="920" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1090.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Model training</text><text x="1090.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">correction, effort, category</text><text x="1090.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">saved sklearn pipelines</text><circle cx="940" cy="95" r="13" fill="#ececec"/><text x="940" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">3</text><path d="M 1260 140 L 1334 140" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="1340" y="75" width="340" height="130" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1510.0" y="124.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Knowledge indexing</text><text x="1510.0" y="146.0" text-anchor="middle" font-size="15" fill="#9b9b9b">16 company PDFs</text><text x="1510.0" y="168.0" text-anchor="middle" font-size="15" fill="#9b9b9b">into a ChromaDB store</text><circle cx="1360" cy="95" r="13" fill="#ececec"/><text x="1360" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#191919">4</text><rect x="40" y="265" width="1720" height="250" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="62" y="299" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">B  ·  USERS AND ACCESS</text><rect x="80" y="315" width="330" height="52" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="245.0" y="347.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Remediation Controller</text><path d="M 410 341 L 560 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="377" width="330" height="52" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="245.0" y="409.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Payroll Analyst</text><path d="M 410 403 L 560 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="439" width="330" height="52" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="245.0" y="471.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">HR Service Desk Agent</text><path d="M 410 465 L 560 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="566" y="345" width="420" height="132" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="776.0" y="395.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Streamlit dashboard</text><text x="776.0" y="417.0" text-anchor="middle" font-size="15" fill="#9b9b9b">5 pages, shown by role</text><text x="776.0" y="439.0" text-anchor="middle" font-size="15" fill="#9b9b9b">displays only, no business rules</text><path d="M 986 411 L 1120 411" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><text x="1053" y="400" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="middle">REST + token</text><rect x="1126" y="345" width="590" height="132" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1421.0" y="395.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">FastAPI service</text><text x="1421.0" y="417.0" text-anchor="middle" font-size="15" fill="#9b9b9b">sign-in and role check on every request</text><text x="1421.0" y="439.0" text-anchor="middle" font-size="15" fill="#9b9b9b">/queue  /assessments  /decision  /chat/ask  /audit</text><rect x="40" y="545" width="1150" height="1580" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="62" y="579" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">C  ·  ASSESSMENT WORKFLOW  (LANGGRAPH)</text><rect x="1220" y="545" width="540" height="1580" rx="12" fill="#1d1d1d" stroke="#2f2f2f" stroke-width="1.2"/><text x="1242" y="579" font-size="15" font-weight="600" fill="#9b9b9b" letter-spacing="2">D  ·  SHARED SERVICES AND DATA</text><path d="M 1420 477 L 1420 515 L 615 515 L 615 595" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="600" width="470" height="92" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="615.0" y="641.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Pay query arrives</text><text x="615.0" y="663.0" text-anchor="middle" font-size="15" fill="#9b9b9b">an employee says their pay is wrong</text><path d="M 615 692 L 615 722" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="728" width="470" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="615.0" y="768.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Ranked query queue</text><text x="615.0" y="790.0" text-anchor="middle" font-size="15" fill="#9b9b9b">correction chance, effort hours, category</text><text x="615.0" y="812.0" text-anchor="middle" font-size="15" fill="#9b9b9b">most money at stake comes first</text><path d="M 615 840 L 615 870" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="876" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="917.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Planner agent</text><text x="615.0" y="939.0" text-anchor="middle" font-size="15" fill="#9b9b9b">decides what needs checking</text><path d="M 615 968 L 615 998" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1004" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1045.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Correction risk analyst</text><text x="615.0" y="1067.0" text-anchor="middle" font-size="15" fill="#9b9b9b">explains what drives the correction score</text><path d="M 615 1096 L 615 1126" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1132" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1173.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Category analyst</text><text x="615.0" y="1195.0" text-anchor="middle" font-size="15" fill="#9b9b9b">checks whether the notes agree</text><path d="M 615 1224 L 615 1254" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1260" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1301.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Pay rate advisor</text><text x="615.0" y="1323.0" text-anchor="middle" font-size="15" fill="#9b9b9b">states pay pieces, rates and difference</text><path d="M 615 1352 L 615 1382" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="380.0" y="1388" width="470" height="92" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="615.0" y="1429.0" text-anchor="middle" font-size="19" font-weight="600" fill="#ececec">Writer agent</text><text x="615.0" y="1451.0" text-anchor="middle" font-size="15" fill="#9b9b9b">writes the assessment + recommendation</text><polygon points="615,1521 795.0,1596.0 615,1671 435.0,1596.0" fill="#262626" stroke="#ffffff" stroke-width="2.5"/><text x="615" y="1590.0" text-anchor="middle" font-size="18" font-weight="700" fill="#ffffff">HUMAN DECISION</text><text x="615" y="1612.0" text-anchor="middle" font-size="14" fill="#9b9b9b">by a different</text><text x="615" y="1630.0" text-anchor="middle" font-size="14" fill="#9b9b9b">Remediation Controller</text><rect x="835.0" y="1561" width="270" height="70" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="970.0" y="1591.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Run paused</text><text x="970.0" y="1613.0" text-anchor="middle" font-size="15" fill="#9b9b9b">saved to disk, survives restart</text><path d="M 835.0 1596 L 801.0 1596" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#d)"/><path d="M 615 1671 L 615 1699 L 245.0 1699 L 245.0 1727" fill="none" stroke="#ffffff" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="1731" width="330" height="82" rx="8" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="245.0" y="1767.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Uphold pay</text><text x="245.0" y="1789.0" text-anchor="middle" font-size="15" fill="#9b9b9b">pay stands, nothing paid</text><path d="M 615 1671 L 615 1699 L 605.0 1699 L 605.0 1727" fill="none" stroke="#ffffff" stroke-width="2" marker-end="url(#a)"/><rect x="440" y="1731" width="330" height="82" rx="8" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="605.0" y="1767.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Correct and compensate</text><text x="605.0" y="1789.0" text-anchor="middle" font-size="15" fill="#9b9b9b">fix pay + commitment payment</text><path d="M 615 1671 L 615 1699 L 965.0 1699 L 965.0 1727" fill="none" stroke="#ffffff" stroke-width="2" marker-end="url(#a)"/><rect x="800" y="1731" width="330" height="82" rx="8" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="965.0" y="1767.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Correct pay</text><text x="965.0" y="1789.0" text-anchor="middle" font-size="15" fill="#9b9b9b">fix the difference</text><rect x="440" y="1861" width="330" height="82" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="605.0" y="1897.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Remediation letter agent</text><text x="605.0" y="1919.0" text-anchor="middle" font-size="15" fill="#9b9b9b">apology + commitment payment</text><rect x="800" y="1861" width="330" height="82" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="965.0" y="1897.0" text-anchor="middle" font-size="16" font-weight="600" fill="#ececec">Pay statement agent</text><text x="965.0" y="1919.0" text-anchor="middle" font-size="15" fill="#9b9b9b">the corrected pay, piece by piece</text><path d="M 605 1813 L 605 1857" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><path d="M 965 1813 L 965 1857" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><path d="M 770 1902 L 796 1902" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="80" y="1996" width="1050" height="78" rx="8" fill="#2c2c2c" stroke="#ececec" stroke-width="1.5"/><text x="605.0" y="2030.0" text-anchor="middle" font-size="18" font-weight="600" fill="#ececec">Outcome recorded</text><text x="605.0" y="2052.0" text-anchor="middle" font-size="15" fill="#9b9b9b">decision, settled amount, documents and every LLM call go to fairpay.db</text><path d="M 245 1813 L 245 1992" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><path d="M 965 1943 L 965 1992" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><rect x="1260" y="600" width="460" height="150" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="648.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Pay calculator (tools)</text><text x="1490.0" y="670.0" text-anchor="middle" font-size="15" fill="#9b9b9b">splits the period at every rate change</text><text x="1490.0" y="692.0" text-anchor="middle" font-size="15" fill="#9b9b9b">exact decimals, rounds once at the end</text><text x="1490.0" y="714.0" text-anchor="middle" font-size="15" fill="#9b9b9b">flags any difference of AUD 1.00 or more</text><rect x="1260" y="778" width="460" height="92" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="819.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Saved ML models</text><text x="1490.0" y="841.0" text-anchor="middle" font-size="15" fill="#9b9b9b">correction, effort, category</text><rect x="1260" y="898" width="460" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="938.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">ChromaDB knowledge base</text><text x="1490.0" y="960.0" text-anchor="middle" font-size="15" fill="#9b9b9b">pay schedules, policies, guides</text><text x="1490.0" y="982.0" text-anchor="middle" font-size="15" fill="#9b9b9b">rates read at run time, never hardcoded</text><rect x="1260" y="1038" width="460" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="1078.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Google Gemini</text><text x="1490.0" y="1100.0" text-anchor="middle" font-size="15" fill="#9b9b9b">one call per agent, writes text only</text><text x="1490.0" y="1122.0" text-anchor="middle" font-size="15" fill="#9b9b9b">never calculates money</text><rect x="1260" y="1178" width="460" height="92" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="1219.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">checkpoint.db</text><text x="1490.0" y="1241.0" text-anchor="middle" font-size="15" fill="#9b9b9b">holds paused runs until a decision</text><rect x="1260" y="1298" width="460" height="112" rx="8" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="1490.0" y="1338.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">fairpay.db  (SQLite)</text><text x="1490.0" y="1360.0" text-anchor="middle" font-size="15" fill="#9b9b9b">users, runs, queries, decisions</text><text x="1490.0" y="1382.0" text-anchor="middle" font-size="15" fill="#9b9b9b">llm_calls, chat_turns</text><rect x="1260" y="1458" width="460" height="150" rx="8" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="6,4"/><text x="1490.0" y="1506.0" text-anchor="middle" font-size="17" font-weight="600" fill="#ececec">Payroll chatbot (RAG)</text><text x="1490.0" y="1528.0" text-anchor="middle" font-size="15" fill="#9b9b9b">one LLM call per question</text><text x="1490.0" y="1550.0" text-anchor="middle" font-size="15" fill="#9b9b9b">refuses if the documents don't cover it</text><text x="1490.0" y="1572.0" text-anchor="middle" font-size="15" fill="#9b9b9b">service desk hears status, never figures</text><path d="M 1640 477 L 1640 510 L 1745 510 L 1745 1533 L 1724 1533" fill="none" stroke="#a3a3a3" stroke-width="2" marker-end="url(#a)"/><text x="1668" y="502" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="start">/chat/ask</text><path d="M 850.0 1306.0 L 1150 1306.0 L 1150 675.0 L 1256 675.0" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#d)"/><text x="862.0" y="1298.0" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="start">exact pay calculation</text><path d="M 850.0 784.0 L 1110 784.0 L 1110 824.0 L 1256 824.0" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#d)"/><text x="862.0" y="776.0" font-size="13" fill="#9b9b9b" font-style="italic" text-anchor="start">predictions</text><rect x="60" y="2150" width="26" height="18" rx="4" fill="#202020" stroke="#5c5c5c" stroke-width="1.5"/><text x="96" y="2165" font-size="15" fill="#9b9b9b">Plain code or data</text><rect x="320" y="2150" width="26" height="18" rx="4" fill="#2a2a2a" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="5,3"/><text x="356" y="2165" font-size="15" fill="#9b9b9b">AI agent (writes text only)</text><rect x="630" y="2150" width="26" height="18" rx="4" fill="#202020" stroke="#ffffff" stroke-width="2"/><text x="666" y="2165" font-size="15" fill="#9b9b9b">Human decision</text><line x1="860" y1="2159" x2="900" y2="2159" stroke="#6b6b6b" stroke-width="2" stroke-dasharray="6,5"/><text x="910" y="2165" font-size="15" fill="#9b9b9b">Uses a service</text></svg></div>
+
+<script>
+const b=document.body, t=document.getElementById('toggle');
+const small=()=>innerWidth<=900;
+function flip(){ small()? b.classList.toggle('show') : b.classList.toggle('hide'); }
+t.onclick=flip;
+addEventListener('keydown',e=>{
+  if(e.key==='\\' && !/input|textarea/i.test(e.target.tagName)) flip();
+  if(e.key==='Escape') z.classList.remove('open');
+});
+document.querySelectorAll('#side a').forEach(a=>a.addEventListener('click',()=>{ if(small()) b.classList.remove('show'); }));
+const z=document.getElementById('zoom');
+document.getElementById('fig').onclick=()=>z.classList.add('open');
+z.onclick=()=>z.classList.remove('open');
+// highlight current section
+const links=[...document.querySelectorAll('#side a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+addEventListener('scroll',()=>{
+  let i=0; secs.forEach((s,k)=>{ if(s && s.getBoundingClientRect().top<120) i=k; });
+  links.forEach((l,k)=>l.classList.toggle('on',k===i));
+},{passive:true});
+</script>
+</body>
+</html>

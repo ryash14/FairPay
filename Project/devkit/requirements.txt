@@ -1,0 +1,21 @@
+# Reference list for running outside the capstone environment.
+# The capstone ships its own requirements.txt; keep that one if you have it.
+pandas>=3.0
+numpy
+scikit-learn>=1.6
+joblib
+pypdf
+chromadb>=1.0
+sentence-transformers
+langgraph>=0.6
+langgraph-checkpoint-sqlite
+google-genai
+python-dotenv
+SQLAlchemy>=2.0
+fastapi
+pydantic>=2
+uvicorn
+httpx
+streamlit>=1.50
+reportlab
+pytest

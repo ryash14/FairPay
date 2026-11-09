@@ -1,0 +1,14 @@
+services:
+  fairpay:
+    build: .
+    image: fairpay-ai:latest
+    env_file: .env
+    ports:
+      - "8080:8080"   # dashboard
+      - "8081:8081"   # REST service, docs at /docs
+    volumes:
+      - fairpay-database:/app/database   # assessments and paused runs survive a restart
+    restart: unless-stopped
+
+volumes:
+  fairpay-database:
